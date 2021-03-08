@@ -1,6 +1,5 @@
 version: '3'
 
-
 services:
   bitwarden:
     # Standard Bitwarden is very resource-heavy and cannot run on micro cloud instances
@@ -27,7 +26,7 @@ services:
     - SMTP_USERNAME
     - SMTP_PASSWORD
  
- proxy:
+  proxy:
     # Caddy provides an automatic HTTPS reverse proxy with Let's Encrypt cert provisioning
     # https://caddyserver.com/
     image: caddy/caddy:alpine
