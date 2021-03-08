@@ -26,9 +26,8 @@ services:
     - SMTP_SSL
     - SMTP_USERNAME
     - SMTP_PASSWORD
-    
-
-  proxy:
+ 
+ proxy:
     # Caddy provides an automatic HTTPS reverse proxy with Let's Encrypt cert provisioning
     # https://caddyserver.com/
     image: caddy/caddy:alpine
@@ -49,95 +48,17 @@ services:
     - DOMAIN                            # Value-less variables are set in .env
     - EMAIL
 
-
-  ddns:
-    # This provides a ddclient dynamic dns updating cron which is as simple as running it
-    # and editing the ddns/config/ddclient.conf file
-    # https://github.com/linuxserver/docker-ddclient
-    image: linuxserver/ddclient
-    restart: always
-    container_name: ddns
-    volumes:
-    - ${PWD}/ddns:/config
+  zerotier:
+    image: croc/zerotier
+    container_name: zerotier
     environment:
-    - PUID
-    - PGID
-    - TZ
-
-
-  fail2ban:
-    # Implements fail2ban functionality, banning ips that 
-    # try to bruteforce your vault
-    # https://github.com/dani-garcia/bitwarden_rs/wiki/Fail2Ban-Setup
-    # https://github.com/crazy-max/docker-fail2ban
-    image: crazymax/fail2ban:latest
-    restart: always
-    container_name: fail2ban
-    depends_on:
-    - bitwarden
+      - NETWORK_ID
+      #- ROUTES=10.10.12.0/23,10.147.20.115;10.10.14.0/23,10.147.20.220
     volumes:
-    - ${PWD}/fail2ban:/data
-    - ${PWD}/bitwarden:/bitwarden:ro
-    network_mode: "host"
+      - ${PWD}/zerotier/route.list:/config/route.list:ro
+    network_mode: host
     privileged: true
-    cap_add:
-    - NET_ADMIN
-    - NET_RAW
-    environment:
-    - F2B_DB_PURGE_AGE=30d
-    - F2B_LOG_TARGET=/data/fail2ban.log
-    - F2B_LOG_LEVEL=INFO
-    - F2B_IPTABLES_CHAIN=INPUT
-    - SSMTP_HOST=${SMTP_HOST}
-    - SSMTP_PORT=${SMTP_PORT}
-    - SSMTP_USER=${SMTP_USERNAME}
-    - SSMTP_PASSWORD=${SMTP_PASSWORD}
-    - SSMTP_HOSTNAME=Bitwarden (${DOMAIN})
-    - SSMTP_TLS=${SMTP_SSL}
-    - SSMTP_STARTTLS=YES
-    - TZ
-
-
-  countryblock:
-    # The block script will block any country (defaults to CN and AU)
-    # Requires cap_add as listed and privileged because it uses iptables and ipset
-    # https://hub.docker.com/_/alpine/
-    image: alpine:latest
     restart: always
-    container_name: countryblock
-    volumes:
-    - ${PWD}/countryblock/block.sh:/block.sh:ro
-    network_mode: "host"
-    privileged: true
-    cap_add:
-    - NET_ADMIN
-    - NET_RAW
-    environment:
-    - COUNTRIES
-    - COUNTRYBLOCK_SCHEDULE
-    - TZ
-    command: >
-      sh -c 'apk --update --no-cache add ipset iptables ip6tables wget bash tzdata &&
-             ln -sf /proc/1/fd/1 /var/log/block.log &&
-             echo "$COUNTRYBLOCK_SCHEDULE bash /block.sh update" >> /etc/crontabs/root &&
-             crond -d 8 &&
-             bash /block.sh start'    
-
-
-  watchtower:
-    # Watchtower will pull down your new image, gracefully shut down your existing container 
-    # and restart it with the same options that were used when it was deployed initially
-    # https://github.com/containrrr/watchtower
-    image: containrrr/watchtower
-    restart: always
-    container_name: watchtower
-    volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-    - WATCHTOWER_CLEANUP=true
-    - WATCHTOWER_SCHEDULE
-    - TZ
-
 
 volumes:
   caddycerts:
