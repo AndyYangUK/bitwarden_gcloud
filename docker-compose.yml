@@ -46,18 +46,6 @@ services:
     - ACME_AGREE=true                   # agree to ACME for auto HTTPS
     - DOMAIN                            # Value-less variables are set in .env
     - EMAIL
-
-  zerotier:
-    image: croc/zerotier
-    container_name: zerotier
-    environment:
-      - NETWORK_ID
-      #- ROUTES=10.10.12.0/23,10.147.20.115;10.10.14.0/23,10.147.20.220
-    volumes:
-      - ${PWD}/zerotier/route.list:/config/route.list:ro
-    network_mode: host
-    privileged: true
-    restart: always
-
+    
 volumes:
   caddycerts:
