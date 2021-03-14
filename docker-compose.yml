@@ -41,14 +41,14 @@ services:
     - ./caddy/data:/data
     - caddycerts:/root/.caddy
     ports:
-   # - 80:80                             # Port 80 is necessary for Let's Encrypt ACME
+    - 80:80                             # Port 80 is necessary for Let's Encrypt ACME
     - 443:443
     environment:
     - LOG_FILE=/data/logs/caddy.log
     - ACME_AGREE=true                   # agree to ACME for auto HTTPS
     - DOMAIN                            # Value-less variables are set in .env
-    - EMAIL
-    - CLOUDFLARE_EMAIL
-    - CLOUDFLARE_API_TOKEN
+    - EMAIL                             # email for LetsEncrypt
+    - CLOUDFLARE_EMAIL                  # Cloudflare account email
+    - CLOUDFLARE_API_TOKEN              # API Token for Cloudflare
 volumes:
   caddycerts:
