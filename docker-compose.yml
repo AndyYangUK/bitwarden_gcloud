@@ -9,7 +9,7 @@ services:
     restart: always
     container_name: bitwarden
     volumes:
-    - ${PWD}/bitwarden:/data
+    - ./bitwarden:/data
     environment:
     - LOG_FILE=/data/bitwarden.log
     - WEBSOCKET_ENABLED=true            # required for websockets
@@ -29,23 +29,26 @@ services:
   proxy:
     # Caddy provides an automatic HTTPS reverse proxy with Let's Encrypt cert provisioning
     # https://caddyserver.com/
-    image: caddy/caddy:alpine
+    build:
+      context: caddy
+      network: host
     restart: always
     container_name: proxy
     depends_on:
     - bitwarden
     volumes:
-    - ${PWD}/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-    - ${PWD}/caddy/data:/data
+    - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+    - ./caddy/data:/data
     - caddycerts:/root/.caddy
     ports:
-    - 80:80                             # Port 80 is necessary for Let's Encrypt ACME
+   # - 80:80                             # Port 80 is necessary for Let's Encrypt ACME
     - 443:443
     environment:
     - LOG_FILE=/data/logs/caddy.log
     - ACME_AGREE=true                   # agree to ACME for auto HTTPS
     - DOMAIN                            # Value-less variables are set in .env
     - EMAIL
-    
+    - CLOUDFLARE_EMAIL
+    - CLOUDFLARE_API_TOKEN
 volumes:
   caddycerts:
