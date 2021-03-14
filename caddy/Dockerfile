@@ -1,6 +1,6 @@
 FROM caddy:builder AS builder
 
-RUN xcaddy \
+RUN xcaddy build \
     -- with github.com/caddy-dns/cloudflare
 
 FROM caddy:latest
