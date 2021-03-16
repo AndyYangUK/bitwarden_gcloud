@@ -27,28 +27,11 @@ services:
     - SMTP_PASSWORD
  
   proxy:
-    # Caddy provides an automatic HTTPS reverse proxy with Let's Encrypt cert provisioning
-    # https://caddyserver.com/
-    build:
-      context: caddy
-      network: host
-    restart: always
-    container_name: proxy
-    depends_on:
-    - bitwarden
-    volumes:
-    - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-    - ./caddy/data:/data
-    - caddycerts:/root/.caddy
+    image: jlesage/nginx-proxy-manager
+    build: .
     ports:
-    - 80:80                             # Port 80 is necessary for Let's Encrypt ACME
-    - 443:443
-    environment:
-    - LOG_FILE=/data/logs/caddy.log
-    - ACME_AGREE=true                   # agree to ACME for auto HTTPS
-    - DOMAIN                            # Value-less variables are set in .env
-    - EMAIL                             # email for LetsEncrypt
-    - CLOUDFLARE_EMAIL                  # Cloudflare account email
-    - CLOUDFLARE_API_TOKEN              # API Token for Cloudflare
-volumes:
-  caddycerts:
+      - "81:8181"
+      - "80:8080"
+      - "443:4443"
+    volumes:
+      - "./nginx-proxy-manager:/config:rw"
