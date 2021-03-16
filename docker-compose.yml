@@ -25,10 +25,12 @@ services:
     - SMTP_SSL
     - SMTP_USERNAME
     - SMTP_PASSWORD
- 
+     ports: [
+      '3000:80/tcp'
+      ]
   proxy:
     image: jlesage/nginx-proxy-manager
-    build: .
+    container_name: proxy
     ports:
       - "81:8181"
       - "80:8080"
